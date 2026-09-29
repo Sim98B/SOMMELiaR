@@ -1,11 +1,7 @@
 import logging
-import json
 from pathlib import Path
 import chromadb
-from chromadb.config import Settings
-from Templates import VectorChunk
-from Models.Embed import generate_embedding, stop_ollama_model
-from Chunkers import chunk_core, chunk_tasting, chunk_pairing
+from Models.Embed import generate_embedding
 
 import numpy as np
 import pandas as pd
@@ -35,159 +31,6 @@ class VectorStore:
         except Exception as e:
             logger.exception(f"Errore durante inizializzazione VectorStore: {e}")
             raise
-
-    def retrieve(
-            self,
-            query,
-            embedding_model,
-            embedding_dimension,
-            top_k=5
-    ):
-        """
-        Ricerca semantica tramite embedding + ChromaDB.
-
-        Args:
-            query: query testuale dell'utente
-            embedding_model: nome del modello Ollama utilizzato per gli embedding
-            top_k: numero massimo di risultati da restituire
-
-        Returns:
-            Lista di risultati nello stesso formato di BM25Retriever.retrieve()
-        """
-
-        # Generazione embedding della query
-        query_embedding = generate_embedding(
-            model_name=embedding_model,
-            text=[query],
-            dim=embedding_dimension
-        )[0]
-        stop_ollama_model(embedding_model)
-
-        # Ricerca semantica in ChromaDB
-        results = self.collection.query(
-            query_embeddings=[query_embedding],
-            n_results=top_k,
-            include=["documents", "metadatas", "distances"]
-        )
-
-        retrieved_results = []
-
-        for i in range(len(results["ids"][0])):
-            distance = results["distances"][0][i]
-
-            retrieved_results.append({
-                "id": results["ids"][0][i],
-                "text": results["documents"][0][i],
-                "metadata": results["metadatas"][0][i],
-                "score": distance
-            })
-
-        return retrieved_results
-
-def prepare_metadata(metadata: dict):
-    return {
-        key: json.dumps(value, ensure_ascii=False)
-        if isinstance(value, (list, dict))
-        else value
-        for key, value in metadata.items()
-    }
-
-def insert_annotations(
-        md_file_path: str,
-        chunker: str,
-        collection,
-        embedding_model: str,
-        embedding_dim: int
-):
-    """
-    Estrae i chunk, genera gli embedding e li inserisce in Chroma.
-
-    Args:
-        md_file_path: file markdown del vino
-        chunker: tipo di chunk da creare
-        embedding_model: modello embedding Ollama
-        collection: collection Chroma
-    """
-
-    logger.info(f"Inizio inserimento annotazioni")
-
-    logger.debug("File: %s", md_file_path)
-    logger.debug("Section: %s", chunker)
-    logger.debug("Embedding model: %s", embedding_model)
-
-    chunkers = {
-        "core": chunk_core,
-        "tasting": chunk_tasting,
-        "pairing": chunk_pairing
-    }
-
-    if chunker not in chunkers:
-        logger.error(f"Chunker non valido: {chunker}. " f"Disponibili: {list(chunkers.keys())}")
-        raise ValueError(f"Chunker '{chunker}' non disponibile. " f"Scegli tra {list(chunkers.keys())}")
-
-    try:
-        chunks = chunkers[chunker](md_file_path)
-
-    except Exception:
-        logger.exception(f"Errore durante creazione chunk | file={md_file_path}")
-        raise
-
-    if isinstance(chunks, VectorChunk):
-        chunks = [chunks]
-    logger.info(f"Creati {len(chunks)} chunk | " f"tipo={chunker}")
-
-    if len(chunks) == 0:
-        logger.warning(f"Nessun chunk generato per il file {md_file_path}")
-        return
-
-    texts = [chunk.text for chunk in chunks]
-    logger.info(f"Generazione embedding per {len(texts)} testi")
-
-    try:
-        embeddings = generate_embedding(
-            model_name=embedding_model,
-            dim=embedding_dim,
-            text=texts
-        )
-
-    except Exception:
-        logger.exception("Errore durante generazione embedding")
-        raise
-
-    logger.info(
-        f"Embedding generati correttamente | "
-        f"numero={len(embeddings)} | "
-        f"dimensione={len(embeddings[0]) if embeddings else 0}"
-    )
-
-    for chunk, embedding in zip(chunks, embeddings):
-        chunk.embedding = embedding
-
-    try:
-        collection.upsert(
-            ids=[
-                chunk.id
-                for chunk in chunks
-            ],
-            documents=[
-                chunk.text
-                for chunk in chunks
-            ],
-            embeddings=[
-                chunk.embedding
-                for chunk in chunks
-            ],
-            metadatas = [
-                prepare_metadata(chunk.metadata)
-                for chunk in chunks
-            ]
-        )
-
-    except Exception:
-        logger.exception(f"Errore inserimento ChromaDB | " f"chunk inseriti={len(chunks)}")
-        raise
-
-    logger.info(f"Inserimento completato | " f"chunk aggiunti={len(chunks)} | " f"collection_size={collection.count()}")
 
 def plot_chroma_embeddings_3d(
         collection,
@@ -282,3 +125,47 @@ def plot_chroma_embeddings_3d(
     fig.show()
 
     return df
+
+def retrieve(
+        self,
+        query,
+        embedding_model,
+        top_k=5
+):
+    """
+    Ricerca semantica tramite embedding + ChromaDB.
+
+    Args:
+        query: query testuale dell'utente
+        embedding_model: nome del modello Ollama utilizzato per gli embedding
+        top_k: numero massimo di risultati da restituire
+
+    Returns:
+        Lista di risultati nello stesso formato di BM25Retriever.retrieve()
+    """
+
+    # Generazione embedding della query
+    query_embedding = generate_embedding(
+        model_name=embedding_model,
+        text=[query],
+    )[0]
+    # Ricerca semantica in ChromaDB
+    results = self.collection.query(
+        query_embeddings=[query_embedding],
+        n_results=top_k,
+        include=["documents", "metadatas", "distances"]
+    )
+
+    retrieved_results = []
+
+    for i in range(len(results["ids"][0])):
+        distance = results["distances"][0][i]
+
+        retrieved_results.append({
+            "id": results["ids"][0][i],
+            "text": results["documents"][0][i],
+            "metadata": results["metadatas"][0][i],
+            "score": distance
+        })
+
+    return retrieved_results

@@ -3,7 +3,6 @@ import json
 import logging
 import time
 from typing import List
-from config import OPENROUTER_API_KEY, EMBEDDING_MODEL
 
 logger = logging.getLogger("EMBED")
 logging.basicConfig(

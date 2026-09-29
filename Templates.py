@@ -1,17 +1,7 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 
-class WineBottle(BaseModel):
-    wine_id: str
-    wine_name: str
-    type: str = "bottle"
-    producer: str
-    region: str
-    bottle_name: str
-    featured: bool = False
-
-class VectorChunk(BaseModel):
+class Wine(BaseModel):
     id: str
     text: str
-    metadata: dict
-    embedding: Optional[List[float]] = None
+    embedding: List[float]
