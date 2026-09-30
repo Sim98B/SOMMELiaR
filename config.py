@@ -18,9 +18,17 @@ OPENROUTER_EMBEDDING_MODEL = os.getenv("OPENROUTER_EMBEDDING_MODEL")
 if not OPENROUTER_EMBEDDING_MODEL:
     raise RuntimeError("OPENROUTER_EMBEDDING_MODEL non configurata")
 
-LLM_MODEL = os.getenv("LLM")
-if not LLM_MODEL:
-    raise RuntimeError("LLM_MODEL non configurata")
+OPENROUTER_LLM_MODEL = os.getenv("OPENROUTER_LLM")
+if not OPENROUTER_LLM_MODEL:
+    raise RuntimeError("OPENROUTER_LLM_MODEL non configurata")
+
+LOCAL_EMBEDDING_MODEL = os.getenv("LOCAL_EMBEDDING_MODEL")
+if not OPENROUTER_EMBEDDING_MODEL:
+    raise RuntimeError("LOCAL_EMBEDDING_MODEL non configurata")
+
+LOCAL_LLM_MODEL = os.getenv("LOCAL_LLM")
+if not LOCAL_LLM_MODEL:
+    raise RuntimeError("LOCAL_LLM_MODEL non configurata")
 
 COLLECTION = os.getenv("COLLECTION_NAME")
 if not COLLECTION:

@@ -4,7 +4,7 @@ from pathlib import Path
 from chroma import VectorStore, plot_chroma_embeddings_3d
 from Templates import Wine
 from Models.Embed import generate_embedding, generate_embedding_local
-from config import OPENROUTER_API_KEY, OPENROUTER_EMBEDDING_MODEL
+from config import OPENROUTER_API_KEY, OPENROUTER_EMBEDDING_MODEL, LOCAL_EMBEDDING_MODEL
 
 logger = logging.getLogger("ADDER")
 logging.basicConfig(
@@ -58,7 +58,7 @@ for wine_name, sections in wines.items():
         text=texts
     )"""
 
-    embeddings = generate_embedding_local(model_name="qwen3-embedding:0.6b", text=texts)
+    embeddings = generate_embedding_local(model_name=LOCAL_EMBEDDING_MODEL, text=texts)
 
     if len(embeddings) != len(chunks):
         raise RuntimeError(
