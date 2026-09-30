@@ -12,7 +12,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
 )
 
-WINES_PATH = Path("Wines/Data_small.json")
+WINES_PATH = Path("Wines/Data_50.json")
 SECTIONS = [
     "profilo",
     "caratteristiche",

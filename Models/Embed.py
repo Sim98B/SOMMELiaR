@@ -5,7 +5,7 @@ from typing import List
 
 import requests
 
-from config import OPENROUTER_URL
+from config import OPENROUTER_URL, MAX_RETRIES, RETRY_DELAY
 
 logger = logging.getLogger("EMBED")
 
@@ -13,10 +13,6 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
 )
-
-MAX_RETRIES = 3
-RETRY_DELAY = 2
-
 
 def generate_embedding(
         api_key: str,

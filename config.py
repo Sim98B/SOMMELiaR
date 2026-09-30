@@ -25,3 +25,11 @@ if not LLM_MODEL:
 COLLECTION = os.getenv("COLLECTION_NAME")
 if not COLLECTION:
     raise RuntimeError("COLLECTION non configurata")
+
+MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
+if not COLLECTION:
+    raise RuntimeError("MAX_RETRIES non configurata")
+
+RETRY_DELAY = int(os.getenv("RETRY_DELAY", "2"))
+if not COLLECTION:
+    raise RuntimeError("RETRY_DELAY non configurata")
