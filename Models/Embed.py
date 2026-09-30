@@ -5,6 +5,8 @@ from typing import List
 
 import requests
 
+import ollama
+
 from config import OPENROUTER_URL, MAX_RETRIES, RETRY_DELAY
 
 logger = logging.getLogger("EMBED")
@@ -102,9 +104,7 @@ def generate_embedding(
                 error_data = {"message": response.text}
 
             error = error_data.get("error", {})
-
             error_code = error.get("code", response.status_code)
-
             error_message = error.get("message", "Errore sconosciuto")
 
             logger.error(
@@ -179,3 +179,51 @@ def generate_embedding(
         return embeddings
 
     raise RuntimeError("Impossibile generare gli embedding")
+
+def generate_embedding_local(
+        model_name: str,
+        text: List[str],
+) -> List[List[float]]:
+    """
+    Args:
+        model_name: modello di embedding da utilizzare.
+        text: lista di testi da trasformare in embedding.
+    Returns:
+        Lista di embeddings
+    """
+
+    logger.info(
+        "Generazione embedding | "
+        "model=%s | "
+        "chunks=%d",
+        model_name,
+        len(text)
+    )
+
+    if not text:
+        logger.warning("Lista testi vuota, nessun embedding generato")
+        return []
+
+    avg_length = sum(len(t) for t in text) / len(text)
+
+    logger.debug(
+        "Statistiche input embedding | "
+        "lunghezza_media_testo=%.0f caratteri | "
+        "max_length=%d",
+        avg_length,
+        max(len(t) for t in text)
+    )
+
+    response = ollama.embed(model=model_name, input=text)
+
+    embeddings = response["embeddings"]
+
+    logger.debug(
+        "Embedding completati | "
+        "chunks=%d | "
+        "dimensione_embedding=%d",
+        len(embeddings),
+        len(embeddings[0]) if embeddings else 0
+    )
+
+    return embeddings

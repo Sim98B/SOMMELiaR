@@ -14,9 +14,9 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:
     raise RuntimeError("OPENROUTER_API_KEY non configurata")
 
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
-if not EMBEDDING_MODEL:
-    raise RuntimeError("EMBEDDING_MODEL non configurata")
+OPENROUTER_EMBEDDING_MODEL = os.getenv("OPENROUTER_EMBEDDING_MODEL")
+if not OPENROUTER_EMBEDDING_MODEL:
+    raise RuntimeError("OPENROUTER_EMBEDDING_MODEL non configurata")
 
 LLM_MODEL = os.getenv("LLM")
 if not LLM_MODEL:
