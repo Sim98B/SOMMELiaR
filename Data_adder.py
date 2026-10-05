@@ -3,8 +3,8 @@ import logging
 from pathlib import Path
 from chroma import VectorStore, plot_chroma_embeddings_3d
 from Templates import Wine
-from Models.Embed import generate_embedding, generate_embedding_local
-from config import OPENROUTER_API_KEY, OPENROUTER_EMBEDDING_MODEL, LOCAL_EMBEDDING_MODEL
+from Models.Embed import generate_embedding_local
+from config import LOCAL_EMBEDDING_MODEL
 
 logger = logging.getLogger("ADDER")
 logging.basicConfig(
@@ -12,7 +12,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
 )
 
-WINES_PATH = Path("Wines/Data_123.json")
+WINES_PATH = Path("Wines/Data.json")
 #WINES_PATH = Path("Wines/Data.json")
 SECTIONS = [
     "profilo",

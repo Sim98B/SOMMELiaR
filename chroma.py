@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 import chromadb
-from Models.Embed import generate_embedding
+from Models.Embed import generate_embedding_local
 
 import numpy as np
 import pandas as pd
@@ -31,6 +31,50 @@ class VectorStore:
         except Exception as e:
             logger.exception(f"Errore durante inizializzazione VectorStore: {e}")
             raise
+
+    def retrieve(
+            self,
+            query: str,
+            embedding_model: str,
+            top_k: int = 5
+    ):
+        """
+        Ricerca semantica tramite embedding + ChromaDB.
+
+        Args:
+            self: collection chroma contenente i vettori
+            query: query testuale dell'utente
+            embedding_model: nome del modello utilizzato per gli embedding
+            top_k: numero massimo di risultati da restituire
+
+        Returns:
+            Lista di risultati ordinati per distanza vettoriale.
+        """
+
+        # Generazione embedding della query
+        query_embedding = generate_embedding_local(
+            model_name=embedding_model,
+            text=[query],
+        )[0]
+
+        # Ricerca semantica in ChromaDB
+        results = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k,
+            include=["documents", "metadatas", "distances"]
+        )
+
+        retrieved_results = []
+
+        for i, result_id in enumerate(results["ids"][0]):
+            retrieved_results.append({
+                "id": result_id,
+                "text": results["documents"][0][i],
+                "metadata": results["metadatas"][0][i],
+                "score": results["distances"][0][i]
+            })
+
+        return retrieved_results
 
 def plot_chroma_embeddings_3d(
         collection,
@@ -125,47 +169,3 @@ def plot_chroma_embeddings_3d(
     fig.show()
 
     return df
-
-def retrieve(
-        self,
-        query,
-        embedding_model,
-        top_k=5
-):
-    """
-    Ricerca semantica tramite embedding + ChromaDB.
-
-    Args:
-        query: query testuale dell'utente
-        embedding_model: nome del modello Ollama utilizzato per gli embedding
-        top_k: numero massimo di risultati da restituire
-
-    Returns:
-        Lista di risultati nello stesso formato di BM25Retriever.retrieve()
-    """
-
-    # Generazione embedding della query
-    query_embedding = generate_embedding(
-        model_name=embedding_model,
-        text=[query],
-    )[0]
-    # Ricerca semantica in ChromaDB
-    results = self.collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"]
-    )
-
-    retrieved_results = []
-
-    for i in range(len(results["ids"][0])):
-        distance = results["distances"][0][i]
-
-        retrieved_results.append({
-            "id": results["ids"][0][i],
-            "text": results["documents"][0][i],
-            "metadata": results["metadatas"][0][i],
-            "score": distance
-        })
-
-    return retrieved_results
