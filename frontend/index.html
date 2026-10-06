@@ -160,6 +160,7 @@
         const queryInput = document.getElementById("query");
         const sendButton = document.getElementById("send");
         const chat = document.getElementById("chat");
+        let conversationHistory = [];
 
 
         function addMessage(text, type) {
@@ -203,6 +204,11 @@
 
             addMessage(query, "user");
 
+            conversationHistory.push({
+                role: "user",
+                content: query
+            });
+
             const assistantMessage = addMessage(
                 "Sto pensando...",
                 "assistant"
@@ -223,7 +229,8 @@
                         },
 
                         body: JSON.stringify({
-                            query: query
+                            query: query,
+                            history: conversationHistory
                         })
                     }
                 );
@@ -268,6 +275,11 @@
 
                 chat.scrollTop = chat.scrollHeight;
             }
+
+            conversationHistory.push({
+                role: "assistant",
+                content: assistantText
+            });
 
             } catch (error) {
 
