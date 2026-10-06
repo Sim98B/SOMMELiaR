@@ -283,10 +283,17 @@
 
             } catch (error) {
 
-                assistantMessage.textContent =
-                    "Si è verificato un errore. Riprova.";
-
                 console.error(error);
+
+                if (assistantText) {
+                    assistantMessage.innerHTML = marked.parse(
+                        assistantText +
+                        "\n\n*La risposta è stata interrotta. Riprova.*"
+                    );
+                } else {
+                    assistantMessage.textContent =
+                        "Si è verificato un errore. Riprova.";
+                }
 
             } finally {
 
