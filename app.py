@@ -27,37 +27,94 @@ st.markdown(
     """
     <style>
 
+    /* Sfondo */
+
     .stApp {
-        background-color: #1c1512;
+        background-color: #f3eadc;
+        color: #000000;
     }
 
-    .main-title {
-        text-align: center;
-        font-size: 42px;
-        font-weight: 700;
-        margin-bottom: 0;
+
+    /* Nasconde header e footer di Streamlit */
+
+    header {
+        visibility: hidden;
     }
 
-    .subtitle {
-        text-align: center;
-        color: #b9aaa3;
-        font-size: 16px;
-        margin-bottom: 35px;
+    footer {
+        visibility: hidden;
     }
+
+
+    /* Area principale */
+
+    .block-container {
+        max-width: 850px;
+        padding-top: 0;
+        padding-bottom: 120px;
+    }
+
+
+    /* Testo generale */
+
+    p {
+        color: #000000;
+    }
+
+
+    /* Input */
+
+    .stChatInput {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(700px, 90%);
+    }
+
+
+    .stChatInput > div {
+        background-color: #ffffff;
+        border: 1px solid #b8aa99;
+        border-radius: 18px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+
+    .stChatInput textarea {
+        color: #000000 !important;
+        background-color: transparent !important;
+    }
+
+
+    .stChatInput textarea::placeholder {
+        color: #77716a !important;
+    }
+
+
+    /* Messaggi */
+
+    [data-testid="stChatMessage"] {
+        background-color: transparent;
+        color: #000000;
+        border: none;
+    }
+
+
+    [data-testid="stChatMessage"] p {
+        color: #000000;
+    }
+
+
+    /* Nasconde le icone/avatar dei messaggi */
+
+    [data-testid="stChatMessageAvatar"] {
+        display: none;
+    }
+
 
     </style>
     """,
-    unsafe_allow_html=True
-)
-
-
-st.markdown(
-    '<div class="main-title">🍷 SOMMELiaR</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">Il tuo sommelier personale</div>',
     unsafe_allow_html=True
 )
 
@@ -69,7 +126,6 @@ if "messages" not in st.session_state:
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
-
         st.markdown(message["content"])
 
 
@@ -90,16 +146,19 @@ if query:
     with st.chat_message("user"):
         st.markdown(query)
 
+
     retrieved_results = vector_store.retrieve(
         query=query,
         embedding_model=LOCAL_EMBEDDING_MODEL,
         top_k=5
     )
 
+
     context = "\n\n".join(
         result["text"]
         for result in retrieved_results
     )
+
 
     messages = [
         {
@@ -122,6 +181,7 @@ if query:
         }
     ]
 
+
     with st.chat_message("assistant"):
 
         response_placeholder = st.empty()
@@ -134,6 +194,7 @@ if query:
         ):
             response += chunk
             response_placeholder.markdown(response)
+
 
     st.session_state.messages.append(
         {
