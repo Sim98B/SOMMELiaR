@@ -12,8 +12,14 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
 class ChatRequest(BaseModel):
     query: str
+    history: list[ChatMessage] = []
 
 vector_store = VectorStore()
 
