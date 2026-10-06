@@ -8,7 +8,7 @@ from Models.LLM import generate_response_openrouter
 from pathlib import Path
 from fastapi.responses import FileResponse
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
@@ -19,7 +19,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     query: str
-    history: list[ChatMessage] = []
+    history: list[ChatMessage] = Field(default_factory=list)
 
 vector_store = VectorStore()
 
@@ -64,11 +64,12 @@ def search(query: str):
 @app.post("/chat")
 def chat(request: ChatRequest):
     query = request.query
+    history = request.history[-6:]
 
     # Costruisce il contesto della conversazione precedente
     history_context = "\n".join(
         f"{message.role}: {message.content}"
-        for message in request.history[-6:]
+        for message in history
     )
 
     # Query utilizzata esclusivamente per il retrieval
@@ -130,7 +131,7 @@ def chat(request: ChatRequest):
             "role": message.role,
             "content": message.content
         }
-        for message in request.history
+        for message in history
     )
 
     messages.append(
