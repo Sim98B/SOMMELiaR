@@ -171,7 +171,11 @@
                 type
             );
 
-            message.textContent = text;
+            if (type === "assistant") {
+                message.innerHTML = marked.parse(text);
+            } else {
+                message.textContent = text;
+            }
 
             chat.appendChild(message);
 
@@ -180,6 +184,12 @@
             return message;
         }
 
+        addMessage(
+            "Ciao! 🍷 Sono **SOMMELiaR**, il tuo sommelier virtuale. " +
+            "Posso aiutarti a conoscere un vino, capire un abbinamento " +
+            "o guidarti nella degustazione. Cosa vuoi scoprire?",
+            "assistant"
+        );
 
         async function sendMessage() {
 
